@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Request Process</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Academic Management System</h1>
+            <div class="user-controls">
+                <label for="currentUser">Logged in as:</label>
+                <select id="currentUser">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+        </header>
+
+        <main>
+            <aside class="sidebar">
+                <button id="btnNewRequest" class="primary-btn">New Leave Request</button>
+
+                <div class="section">
+                    <h3>My Tasks <span id="taskCount" class="badge">0</span></h3>
+                    <ul id="taskList" class="list-group">
+                        <!-- Tasks go here -->
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>All Requests (Debug)</h3>
+                    <ul id="requestList" class="list-group">
+                        <!-- All requests go here -->
+                    </ul>
+                </div>
+            </aside>
+
+            <section class="content-area">
+                <div id="welcomeMessage" class="placeholder-content">
+                    <h2>Welcome</h2>
+                    <p>Select a task from the left or start a new request.</p>
+                </div>
+
+                <div id="formContainer" class="hidden">
+                    <h2 id="formTitle">Task Name</h2>
+                    <p id="formDescription">Task Description</p>
+
+                    <div id="readOnlyData" class="data-grid">
+                        <!-- Read-only data from previous steps -->
+                    </div>
+
+                    <form id="taskForm">
+                        <div id="formFields">
+                            <!-- Dynamic fields -->
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">Complete Task</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Process Selection Modal -->
+    <div id="processModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2>Select Process</h2>
+            <div class="process-options">
+                <div class="process-card" onclick="app.selectProcess('Decorations')">
+                    <h3>Decorations and Medals</h3>
+                    <p>Apply for employee decorations and medals.</p>
+                </div>
+                <div class="process-card" onclick="app.selectProcess('EmploymentConditions')">
+                    <h3>Change Employment Conditions</h3>
+                    <p>Request changes to employment terms.</p>
+                </div>
+            </div>
+            <button class="close-btn" onclick="app.closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

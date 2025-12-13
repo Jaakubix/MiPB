@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?><bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:aurea="http://aurea.software/schema/2024/bpmn" id="Definitions_DPE_1_3_Change" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.28.0">
+  <bpmn:collaboration id="Collaboration_DPE_1_3_Change">
+    <bpmn:participant id="Participant_Pool_WAT_Change" name="MUT (DPE/1-3: Change of Employment Conditions)" processRef="Process_DPE_1_3_Change"/>
+    <bpmn:textAnnotation id="Annotation_Task2">
+      <bpmn:text>Checklist:
+- Hand over documents to employee
+- Attach 1 copy to personnel files</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_2" sourceRef="Task_HandOverAndArchive" targetRef="Annotation_Task2"/>
+    <bpmn:textAnnotation id="Annotation_Task1">
+      <bpmn:text>Checklist:
+- Inform Head of O.U. about the decision
+- Implement changes in HR system
+- Prepare confirming documents</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_1" sourceRef="Task_ImplementAndPrepare" targetRef="Annotation_Task1"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Process_DPE_1_3_Change" isExecutable="true" camunda:versionTag="1.0">
+    <bpmn:extensionElements/>
+    <bpmn:laneSet id="LaneSet_0p9q7qz">
+      <bpmn:lane id="Lane_HeadOU" name="Head of O.U.">
+        <bpmn:flowNodeRef>StartEvent_ApplicationSubmitted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ReviewAndForward_HeadOU</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_PD" name="PD (Personnel Department)">
+        <bpmn:flowNodeRef>Annotation_Task1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Annotation_Task2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ReviewApplication_PD</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ImplementAndPrepare</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HandOverAndArchive</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_ProcessEnded</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Quartermaster" name="Quartermaster (KWE)">
+        <bpmn:flowNodeRef>Task_Review_KWE</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Chancellor" name="Chancellor (KAN)">
+        <bpmn:flowNodeRef>Gateway_IsAcademicTeacher</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_MakeDecision_Chancellor</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_JoinDecision</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_VRE" name="Vice-Rector for Education (PRK)">
+        <bpmn:flowNodeRef>Task_Review_PRK</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_VRSA" name="Vice-Rector for Scientific Affairs (PRN)">
+        <bpmn:flowNodeRef>Task_Review_PRN</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Rector" name="Rector (RKR)">
+        <bpmn:flowNodeRef>Task_MakeDecision_RKR</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:sequenceFlow id="Flow_JoinGateToInform" sourceRef="Gateway_JoinDecision" targetRef="Task_ImplementAndPrepare"/>
+    <bpmn:sequenceFlow id="Flow_DecisionRKRToJoinGate" sourceRef="Task_MakeDecision_RKR" targetRef="Gateway_JoinDecision"/>
+    <bpmn:sequenceFlow id="Flow_ReviewPRNToDecisionRKR" sourceRef="Task_Review_PRN" targetRef="Task_MakeDecision_RKR"/>
+    <bpmn:sequenceFlow id="Flow_ReviewPRKToReviewPRN" sourceRef="Task_Review_PRK" targetRef="Task_Review_PRN"/>
+    <bpmn:sequenceFlow id="Flow_DecisionKANToJoinGate" sourceRef="Task_MakeDecision_Chancellor" targetRef="Gateway_JoinDecision"/>
+    <bpmn:sequenceFlow id="Flow_Yes_ToPRK" name="Yes" sourceRef="Gateway_IsAcademicTeacher" targetRef="Task_Review_PRK"/>
+    <bpmn:sequenceFlow id="Flow_No_ToKAN" name="No (Non-academic employee)" sourceRef="Gateway_IsAcademicTeacher" targetRef="Task_MakeDecision_Chancellor"/>
+    <bpmn:sequenceFlow id="Flow_ReviewKWEToIsAcademic" sourceRef="Task_Review_KWE" targetRef="Gateway_IsAcademicTeacher"/>
+    <bpmn:sequenceFlow id="Flow_ReviewPDToKWE" sourceRef="Task_ReviewApplication_PD" targetRef="Task_Review_KWE"/>
+    <bpmn:sequenceFlow id="Flow_ReviewHeadOUToReviewPD" sourceRef="Task_ReviewAndForward_HeadOU" targetRef="Task_ReviewApplication_PD"/>
+    <bpmn:sequenceFlow id="Flow_StartToReviewHeadOU" sourceRef="StartEvent_ApplicationSubmitted" targetRef="Task_ReviewAndForward_HeadOU"/>
+    <bpmn:startEvent id="StartEvent_ApplicationSubmitted" name="Change of Employment Conditions Application Submitted">
+      <bpmn:outgoing>Flow_StartToReviewHeadOU</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_ImplementToHandOver" sourceRef="Task_ImplementAndPrepare" targetRef="Task_HandOverAndArchive"/>
+    <bpmn:sequenceFlow id="Flow_ArchiveToProcessEnd" sourceRef="Task_HandOverAndArchive" targetRef="EndEvent_ProcessEnded"/>
+    <bpmn:userTask id="Task_Review_KWE" name="Review application (Quartermaster)" aurea:responsibleRef="Lane_Quartermaster">
+      <bpmn:incoming>Flow_ReviewPDToKWE</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReviewKWEToIsAcademic</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_IsAcademicTeacher" name="Concerns an academic teacher?">
+      <bpmn:incoming>Flow_ReviewKWEToIsAcademic</bpmn:incoming>
+      <bpmn:outgoing>Flow_No_ToKAN</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Yes_ToPRK</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_MakeDecision_Chancellor" name="Make decision (KAN) and return to PD" aurea:responsibleRef="Lane_Chancellor">
+      <bpmn:incoming>Flow_No_ToKAN</bpmn:incoming>
+      <bpmn:outgoing>Flow_DecisionKANToJoinGate</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_ReviewAndForward_HeadOU" name="Review and forward application to PD" aurea:responsibleRef="Lane_HeadOU">
+      <bpmn:incoming>Flow_StartToReviewHeadOU</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReviewHeadOUToReviewPD</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_ReviewApplication_PD" name="Review application (PD)" aurea:responsibleRef="Lane_PD">
+      <bpmn:incoming>Flow_ReviewHeadOUToReviewPD</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReviewPDToKWE</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_Review_PRK" name="Review application (PRK) and forward to PRN" aurea:responsibleRef="Lane_VRE">
+      <bpmn:incoming>Flow_Yes_ToPRK</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReviewPRKToReviewPRN</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_JoinDecision">
+      <bpmn:incoming>Flow_DecisionKANToJoinGate</bpmn:incoming>
+      <bpmn:incoming>Flow_DecisionRKRToJoinGate</bpmn:incoming>
+      <bpmn:outgoing>Flow_JoinGateToInform</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_Review_PRN" name="Review application (PRN) and forward to Rector" aurea:responsibleRef="Lane_VRSA">
+      <bpmn:incoming>Flow_ReviewPRKToReviewPRN</bpmn:incoming>
+      <bpmn:outgoing>Flow_ReviewPRNToDecisionRKR</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_MakeDecision_RKR" name="Make decision (RKR) and return to PD" aurea:responsibleRef="Lane_Rector">
+      <bpmn:incoming>Flow_ReviewPRNToDecisionRKR</bpmn:incoming>
+      <bpmn:outgoing>Flow_DecisionRKRToJoinGate</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_ImplementAndPrepare" name="Implement, Prepare, and Inform" aurea:responsibleRef="Lane_PD">
+      <bpmn:incoming>Flow_JoinGateToInform</bpmn:incoming>
+      <bpmn:outgoing>Flow_ImplementToHandOver</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_HandOverAndArchive" name="Hand Over Documents and Archive" aurea:responsibleRef="Lane_PD">
+      <bpmn:incoming>Flow_ImplementToHandOver</bpmn:incoming>
+      <bpmn:outgoing>Flow_ArchiveToProcessEnd</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_ProcessEnded" name="Service process ended">
+      <bpmn:incoming>Flow_ArchiveToProcessEnd</bpmn:incoming>
+    </bpmn:endEvent>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_DPE_1_3_Change">
+      <bpmndi:BPMNShape id="Participant_Pool_WAT_Change_di" bpmnElement="Participant_Pool_WAT_Change" isHorizontal="true">
+        <dc:Bounds x="150" y="80" width="980" height="840"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_RKR_di" bpmnElement="Lane_Rector" isHorizontal="true">
+        <dc:Bounds x="180" y="800" width="950" height="120"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_PRN_di" bpmnElement="Lane_VRSA" isHorizontal="true">
+        <dc:Bounds x="180" y="680" width="950" height="120"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_PRK_di" bpmnElement="Lane_VRE" isHorizontal="true">
+        <dc:Bounds x="180" y="560" width="950" height="120"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_KAN_di" bpmnElement="Lane_Chancellor" isHorizontal="true">
+        <dc:Bounds x="180" y="440" width="950" height="120"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_KWE_di" bpmnElement="Lane_Quartermaster" isHorizontal="true">
+        <dc:Bounds x="180" y="320" width="950" height="120"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_DPE_di" bpmnElement="Lane_PD" isHorizontal="true">
+        <dc:Bounds x="180" y="200" width="950" height="120"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Kierownik_JO_di" bpmnElement="Lane_HeadOU" isHorizontal="true">
+        <dc:Bounds x="180" y="80" width="950" height="120"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_ZlozonoWniosek_di" bpmnElement="StartEvent_ApplicationSubmitted">
+        <dc:Bounds x="232" y="92" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="220" y="135" width="62" height="66"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Opiniuje_KWE_di" bpmnElement="Task_Review_KWE">
+        <dc:Bounds x="440" y="340" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_CzyNauczyciel_di" bpmnElement="Gateway_IsAcademicTeacher" isMarkerVisible="true">
+        <dc:Bounds x="465" y="475" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="398" y="480" width="63" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PodejmujeDecyzje_KAN_di" bpmnElement="Task_MakeDecision_Chancellor">
+        <dc:Bounds x="590" y="460" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_OpiniujeWniosek_JO_di" bpmnElement="Task_ReviewAndForward_HeadOU">
+        <dc:Bounds x="303" y="100" width="100" height="88"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_OpiniujeWniosek_DPE_di" bpmnElement="Task_ReviewApplication_PD">
+        <dc:Bounds x="303" y="220" width="106" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Opiniuje_PRK_di" bpmnElement="Task_Review_PRK">
+        <dc:Bounds x="589" y="576" width="104" height="88"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_JoinDecyzji_di" bpmnElement="Gateway_JoinDecision" isMarkerVisible="true">
+        <dc:Bounds x="757" y="475" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Opiniuje_PRN_di" bpmnElement="Task_Review_PRN">
+        <dc:Bounds x="589" y="689" width="100" height="102"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PodejmujeDecyzje_RKR_di" bpmnElement="Task_MakeDecision_RKR">
+        <dc:Bounds x="588" y="820" width="101" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ImplementAndPrepare_di" bpmnElement="Task_ImplementAndPrepare">
+        <dc:Bounds x="735" y="220" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HandOverAndArchive_di" bpmnElement="Task_HandOverAndArchive">
+        <dc:Bounds x="890" y="220" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Koniec_di" bpmnElement="EndEvent_ProcessEnded">
+        <dc:Bounds x="1042" y="242" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1020" y="288" width="79" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0x7w5c0_di" bpmnElement="Flow_JoinGateToInform">
+        <di:waypoint x="782" y="475"/>
+        <di:waypoint x="782" y="300"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1d1c83y_di" bpmnElement="Flow_DecisionRKRToJoinGate">
+        <di:waypoint x="689" y="860"/>
+        <di:waypoint x="782" y="860"/>
+        <di:waypoint x="782" y="525"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0k6a1k6_di" bpmnElement="Flow_ReviewPRNToDecisionRKR">
+        <di:waypoint x="639" y="791"/>
+        <di:waypoint x="639" y="820"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0l60t5q_di" bpmnElement="Flow_ReviewPRKToReviewPRN">
+        <di:waypoint x="639" y="664"/>
+        <di:waypoint x="639" y="689"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0zcj0s3_di" bpmnElement="Flow_DecisionKANToJoinGate">
+        <di:waypoint x="691" y="500"/>
+        <di:waypoint x="757" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Tak_Do_PRK_di" bpmnElement="Flow_Yes_ToPRK">
+        <di:waypoint x="490" y="525"/>
+        <di:waypoint x="490" y="616"/>
+        <di:waypoint x="589" y="616"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="500" y="562" width="18" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Nie_Do_KAN_di" bpmnElement="Flow_No_ToKAN">
+        <di:waypoint x="515" y="500"/>
+        <di:waypoint x="590" y="500"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="514" y="450" width="52" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qacbll_di" bpmnElement="Flow_ReviewKWEToIsAcademic">
+        <di:waypoint x="490" y="420"/>
+        <di:waypoint x="490" y="475"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1v5o485_di" bpmnElement="Flow_ReviewPDToKWE">
+        <di:waypoint x="353" y="300"/>
+        <di:waypoint x="353" y="380"/>
+        <di:waypoint x="440" y="380"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02gq1u6_di" bpmnElement="Flow_ReviewHeadOUToReviewPD">
+        <di:waypoint x="353" y="188"/>
+        <di:waypoint x="353" y="220"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0vjefos_di" bpmnElement="Flow_StartToReviewHeadOU">
+        <di:waypoint x="268" y="110"/>
+        <di:waypoint x="286" y="110"/>
+        <di:waypoint x="286" y="140"/>
+        <di:waypoint x="303" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1t0d2d7_di" bpmnElement="Flow_ImplementToHandOver">
+        <di:waypoint x="835" y="260"/>
+        <di:waypoint x="890" y="260"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pksk2c_di" bpmnElement="Flow_ArchiveToProcessEnd">
+        <di:waypoint x="990" y="260"/>
+        <di:waypoint x="1042" y="260"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_2_di" bpmnElement="Association_2">
+        <di:waypoint x="970" y="220"/>
+        <di:waypoint x="978" y="178"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_1_di" bpmnElement="Association_1">
+        <di:waypoint x="820" y="220"/>
+        <di:waypoint x="762" y="184"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Annotation_Task2_di" bpmnElement="Annotation_Task2">
+        <dc:Bounds x="890" y="110" width="210" height="68"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Annotation_Task1_di" bpmnElement="Annotation_Task1">
+        <dc:Bounds x="600" y="104" width="235" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
