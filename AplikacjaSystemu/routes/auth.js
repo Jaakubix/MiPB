@@ -45,6 +45,8 @@ router.post('/login', async (req, res) => {
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) return res.status(401).json({ message: 'Invalid credentials' });
 
+        if (user.isActive === false) return res.status(403).json({ message: 'Account is inactive. Contact administrator.' });
+
         const token = jwt.sign({ id: user.id, role: user.role, name: user.fullName }, SECRET_KEY, { expiresIn: '1h' });
         res.json({
             token,
@@ -54,7 +56,8 @@ router.post('/login', async (req, res) => {
                 role: user.role,
                 fullName: user.fullName,
                 isAcademic: user.isAcademic,
-                position: user.position
+                position: user.position,
+                isActive: user.isActive
             }
         });
     } catch (error) {
@@ -106,25 +109,28 @@ router.post('/reset-password', async (req, res) => {
 // Admin: Get Users
 router.get('/users', async (req, res) => {
     try {
-        const users = await User.findAll({ attributes: ['id', 'username', 'fullName', 'role', 'isAcademic', 'position'] });
+        const users = await User.findAll({ attributes: ['id', 'username', 'fullName', 'role', 'isAcademic', 'position', 'isActive'] });
         res.json(users);
     } catch (error) {
         res.status(500).json({ error });
     }
 });
 
-// Admin: Update Role
-router.put('/users/:id/role', async (req, res) => {
+// Admin: Update User (Role, Position, Active Status)
+router.put('/users/:id', async (req, res) => {
     try {
-        const { role } = req.body;
+        const { role, position, isActive } = req.body;
         const user = await User.findByPk(req.params.id);
         if (!user) return res.status(404).json({ message: 'User not found' });
 
-        user.role = role;
+        if (role !== undefined) user.role = role;
+        if (position !== undefined) user.position = position;
+        if (isActive !== undefined) user.isActive = isActive;
+
         await user.save();
-        res.json({ message: 'Role updated', user });
+        res.json({ message: 'User updated successfully', user });
     } catch (error) {
-        res.status(500).json({ error });
+        res.status(500).json({ error: error.message });
     }
 });
 

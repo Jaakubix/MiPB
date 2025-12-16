@@ -197,10 +197,10 @@ class AppState {
     renderUserTable(users) {
         const tbody = document.getElementById('userListBody');
         tbody.innerHTML = users.map(u => `
-            <tr style="${!u.isActive ? 'opacity: 0.6; background: #f0f0f0;' : ''}">
+            <tr style="${u.isActive === false ? 'opacity: 0.6; background: #f0f0f0;' : ''}">
                 <td>
-                    <b>${u.fullName}</b> ${!u.isActive ? '(Inactive)' : ''}<br>
-                    <small>${u.username}</small> - <small>${u.role}</small>
+                    <b>${u.fullName}</b> ${u.isActive === false ? '(Inactive)' : ''}<br>
+                    <small>${u.username}</small>
                 </td>
                 <td style="text-align: right;">
                     <button class="primary-btn" onclick="app.openManageUserModal(${u.id})">Manage</button>
@@ -248,10 +248,12 @@ class AppState {
                 document.getElementById('manageUserModal').classList.add('hidden');
                 this.loadUsers();
             } else {
-                alert('Failed to update user');
+                const data = await res.json();
+                alert('Failed to update user: ' + (data.error || data.message));
             }
         } catch (err) {
             console.error(err);
+            alert('Error: ' + err.message);
         }
     }
 
