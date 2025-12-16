@@ -27,8 +27,9 @@
                     <ul id="taskList" class="list-group"></ul>
                 </div>
 
-                <div class="section">
-                    <h3>All Requests (Admin/Debug)</h3>
+                <div class="section" id="adminSection" style="display:none;">
+                    <h3>Admin Panel</h3>
+                    <button class="secondary-btn" onclick="app.showAdminPanel()">Manage Users</button>
                     <ul id="requestList" class="list-group"></ul>
                 </div>
             </aside>
@@ -37,6 +38,21 @@
                 <div id="welcomeMessage" class="placeholder-content">
                     <h2>Welcome</h2>
                     <p>Select a task from the left or start a new request.</p>
+                </div>
+
+                <div id="adminPanel" class="hidden">
+                    <h2>Manage Users</h2>
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Full Name</th>
+                                <th>Current Role</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userListBody"></tbody>
+                    </table>
                 </div>
 
                 <div id="formContainer" class="hidden">

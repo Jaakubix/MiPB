@@ -141,6 +141,70 @@ class AppState {
         if (this.currentUser) {
             document.getElementById('userInfo').textContent = `Welcome, ${this.currentUser.fullName} (${this.currentUser.role})`;
             document.getElementById('btnLogout').style.display = 'inline-block';
+            this.updateUIState(); // Refresh buttons/permissions
+        }
+    }
+
+
+
+    async showAdminPanel() {
+        document.getElementById('formContainer').classList.add('hidden');
+        document.getElementById('welcomeMessage').classList.add('hidden');
+        document.getElementById('adminPanel').classList.remove('hidden');
+        await this.loadUsers();
+    }
+
+    async loadUsers() {
+        try {
+            const res = await fetch(`${AUTH_URL}/users`);
+            const users = await res.json();
+            const tbody = document.getElementById('userListBody');
+
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td>${u.username}</td>
+                    <td>${u.fullName}</td>
+                    <td>
+                        <select id="role-${u.id}">
+                            <option value="Employee" ${u.role === 'Employee' ? 'selected' : ''}>Employee</option>
+                            <option value="HeadOU" ${u.role === 'HeadOU' ? 'selected' : ''}>HeadOU</option>
+                            <option value="PD" ${u.role === 'PD' ? 'selected' : ''}>PD</option>
+                            <option value="KWE" ${u.role === 'KWE' ? 'selected' : ''}>KWE</option>
+                            <option value="PRK" ${u.role === 'PRK' ? 'selected' : ''}>PRK</option>
+                            <option value="PRN" ${u.role === 'PRN' ? 'selected' : ''}>PRN</option>
+                            <option value="Rector" ${u.role === 'Rector' ? 'selected' : ''}>Rector</option>
+                            <option value="Chancellor" ${u.role === 'Chancellor' ? 'selected' : ''}>Chancellor</option>
+                            <option value="MPD" ${u.role === 'MPD' ? 'selected' : ''}>MPD</option>
+                            <option value="Admin" ${u.role === 'Admin' ? 'selected' : ''}>Admin</option>
+                        </select>
+                    </td>
+                    <td>
+                        <button class="primary-btn" onclick="app.updateUserRole(${u.id})">Update</button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async updateUserRole(userId) {
+        const select = document.getElementById(`role-${userId}`);
+        const newRole = select.value;
+
+        try {
+            const res = await fetch(`${AUTH_URL}/users/${userId}/role`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: newRole })
+            });
+            if (res.ok) {
+                alert('Role updated successfully');
+            } else {
+                alert('Failed to update role');
+            }
+        } catch (err) {
+            console.error(err);
         }
     }
 
@@ -459,6 +523,16 @@ class AppState {
     }
 
     updateUIState() {
+        // Admin Section Check
+        const adminSection = document.getElementById('adminSection');
+        if (adminSection) {
+            if (this.currentUser && this.currentUser.role === 'Admin') {
+                adminSection.style.display = 'block';
+            } else {
+                adminSection.style.display = 'none';
+            }
+        }
+
         const btn = document.getElementById('btnNewRequest');
         if (!this.currentUser) return;
 
