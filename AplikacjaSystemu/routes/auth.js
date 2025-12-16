@@ -6,18 +6,29 @@ const User = require('../models/User');
 const router = express.Router();
 const SECRET_KEY = 'secret_academic_key'; // In prod use env var
 
-// Register
+// Register (Add User)
 router.post('/register', async (req, res) => {
     try {
-        const { username, password, fullName, isAcademic } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const { username, fullName, position, role, isAcademic } = req.body;
+
+        // Default Password Generation: FirstNameLastName123@
+        // Assuming fullName is "First Last"
+        const nameParts = fullName.split(' ');
+        const first = nameParts[0] || 'User';
+        const last = nameParts[1] || '';
+        const defaultPassword = `${first}${last}123@`; // e.g. AliceAcademic123@
+
+        const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
         const user = await User.create({
-            username,
+            username, // Email
             password: hashedPassword,
             fullName,
-            isAcademic
+            role: role || 'Employee',
+            position,
+            isAcademic: isAcademic || false
         });
-        res.status(201).json({ message: 'User created' });
+        res.status(201).json({ message: 'User created', defaultPassword });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -35,7 +46,58 @@ router.post('/login', async (req, res) => {
         if (!validPassword) return res.status(401).json({ message: 'Invalid credentials' });
 
         const token = jwt.sign({ id: user.id, role: user.role, name: user.fullName }, SECRET_KEY, { expiresIn: '1h' });
-        res.json({ token, user: { id: user.id, username: user.username, role: user.role, fullName: user.fullName, isAcademic: user.isAcademic } });
+        res.json({
+            token,
+            user: {
+                id: user.id,
+                username: user.username,
+                role: user.role,
+                fullName: user.fullName,
+                isAcademic: user.isAcademic,
+                position: user.position
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Change Password
+router.post('/change-password', async (req, res) => {
+    try {
+        const { userId, oldPassword, newPassword } = req.body;
+        // Ideally verify token matches userId
+        const user = await User.findByPk(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const valid = await bcrypt.compare(oldPassword, user.password);
+        if (!valid) return res.status(401).json({ message: 'Invalid old password' });
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+        res.json({ message: 'Password changed successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Admin: Reset Password
+router.post('/reset-password', async (req, res) => {
+    try {
+        const { userId } = req.body; // Admin passes ID
+        // Middleware should check if requester is Admin (skipped for simplicity as per instructions)
+
+        const user = await User.findByPk(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const nameParts = user.fullName.split(' ');
+        const first = nameParts[0] || 'User';
+        const last = nameParts[1] || '';
+        const defaultPassword = `${first}${last}123@`;
+
+        user.password = await bcrypt.hash(defaultPassword, 10);
+        await user.save();
+        res.json({ message: `Password reset to ${defaultPassword}` });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -44,7 +106,7 @@ router.post('/login', async (req, res) => {
 // Admin: Get Users
 router.get('/users', async (req, res) => {
     try {
-        const users = await User.findAll({ attributes: ['id', 'username', 'fullName', 'role', 'isAcademic'] });
+        const users = await User.findAll({ attributes: ['id', 'username', 'fullName', 'role', 'isAcademic', 'position'] });
         res.json(users);
     } catch (error) {
         res.status(500).json({ error });

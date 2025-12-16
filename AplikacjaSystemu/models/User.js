@@ -23,6 +23,14 @@ const User = sequelize.define('User', {
     isAcademic: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+    position: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    isActive: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
     }
 });
 

@@ -8,6 +8,14 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     try {
         const requests = await Request.findAll();
+        // Since we don't have middleware passing user yet, we assume the frontend sends a query param or we filter all.
+        // Ideally: const user = req.user;
+        // BUT: User requirement says "user who creates process... see earlier tasks". 
+        // AND "this concerns everyone who took part".
+        // WITHOUT AUTH MIDDLEWARE extracting User, we can't filter server-side easily unless we pass user ID in query.
+        // HOWEVER, the previous implementation just returned ALL requests. 
+        // I will return all requests and let the Frontend filter for "My Tasks" vs "My History" to avoid breaking change without full Auth implementation.
+        // Wait, the user wants VISIBILITY. 
         res.json(requests);
     } catch (error) {
         res.status(500).json({ error: error.message });

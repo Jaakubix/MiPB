@@ -13,7 +13,7 @@ const PROCESS_DEFS = {
                 next: 'Task_ReviewAndForward_HeadOU',
                 form: [
                     { name: 'request_date', label: 'Request Date', type: 'date', readonly: true },
-                    { name: 'employee_position', label: 'Position', type: 'text', default: 'Lecturer' },
+                    { name: 'employee_position', label: 'Position', type: 'text', readonly: true },
                     { name: 'leave_type', label: 'Leave Type', type: 'select', options: ['Recreational', 'Childcare', 'Exceptional'] },
                     { name: 'leave_start_date', label: 'Start Date', type: 'date' },
                     { name: 'leave_end_date', label: 'End Date', type: 'date' },
@@ -93,6 +93,27 @@ class AppState {
         // Login Handler
         document.getElementById('loginForm').onsubmit = (e) => this.handleLogin(e);
         document.getElementById('btnLogout').onclick = () => this.handleLogout();
+
+        // Admin & User Handlers
+        const addUserForm = document.getElementById('addUserForm');
+        if (addUserForm) addUserForm.onsubmit = (e) => this.handleAddUser(e);
+
+        const changePassForm = document.getElementById('changePasswordForm');
+        if (changePassForm) changePassForm.onsubmit = (e) => this.handleChangePassword(e);
+
+        const btnChangePass = document.getElementById('btnChangePass');
+        if (btnChangePass) btnChangePass.onclick = () => document.getElementById('passwordModal').classList.remove('hidden');
+
+        // Auto-fill email
+        const addNameInput = document.querySelector('#addUserForm [name="fullName"]');
+        const addEmailInput = document.querySelector('#addUserForm [name="username"]');
+        if (addNameInput && addEmailInput) {
+            addNameInput.addEventListener('input', () => {
+                const name = addNameInput.value.trim().toLowerCase();
+                const safeName = name.replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, '.');
+                addEmailInput.value = safeName ? `${safeName}@university.pl` : '';
+            });
+        }
     }
 
     showLogin() {
@@ -157,55 +178,118 @@ class AppState {
     async loadUsers() {
         try {
             const res = await fetch(`${AUTH_URL}/users`);
-            const users = await res.json();
-            const tbody = document.getElementById('userListBody');
-
-            tbody.innerHTML = users.map(u => `
-                <tr>
-                    <td>${u.username}</td>
-                    <td>${u.fullName}</td>
-                    <td>
-                        <select id="role-${u.id}">
-                            <option value="Employee" ${u.role === 'Employee' ? 'selected' : ''}>Employee</option>
-                            <option value="HeadOU" ${u.role === 'HeadOU' ? 'selected' : ''}>HeadOU</option>
-                            <option value="PD" ${u.role === 'PD' ? 'selected' : ''}>PD</option>
-                            <option value="KWE" ${u.role === 'KWE' ? 'selected' : ''}>KWE</option>
-                            <option value="PRK" ${u.role === 'PRK' ? 'selected' : ''}>PRK</option>
-                            <option value="PRN" ${u.role === 'PRN' ? 'selected' : ''}>PRN</option>
-                            <option value="Rector" ${u.role === 'Rector' ? 'selected' : ''}>Rector</option>
-                            <option value="Chancellor" ${u.role === 'Chancellor' ? 'selected' : ''}>Chancellor</option>
-                            <option value="MPD" ${u.role === 'MPD' ? 'selected' : ''}>MPD</option>
-                            <option value="Admin" ${u.role === 'Admin' ? 'selected' : ''}>Admin</option>
-                        </select>
-                    </td>
-                    <td>
-                        <button class="primary-btn" onclick="app.updateUserRole(${u.id})">Update</button>
-                    </td>
-                </tr>
-            `).join('');
+            this.allUsers = await res.json();
+            this.renderUserTable(this.allUsers);
         } catch (err) {
             console.error(err);
         }
     }
 
-    async updateUserRole(userId) {
-        const select = document.getElementById(`role-${userId}`);
-        const newRole = select.value;
+    filterUsers() {
+        const term = document.getElementById('userSearch').value.toLowerCase();
+        const filtered = this.allUsers.filter(u =>
+            u.fullName.toLowerCase().startsWith(term) ||
+            u.username.toLowerCase().startsWith(term)
+        );
+        this.renderUserTable(filtered);
+    }
+
+    renderUserTable(users) {
+        const tbody = document.getElementById('userListBody');
+        tbody.innerHTML = users.map(u => `
+            <tr style="${!u.isActive ? 'opacity: 0.6; background: #f0f0f0;' : ''}">
+                <td>
+                    <b>${u.fullName}</b> ${!u.isActive ? '(Inactive)' : ''}<br>
+                    <small>${u.username}</small> - <small>${u.role}</small>
+                </td>
+                <td style="text-align: right;">
+                    <button class="primary-btn" onclick="app.openManageUserModal(${u.id})">Manage</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    openManageUserModal(userId) {
+        const user = this.allUsers.find(u => u.id === userId);
+        if (!user) return;
+
+        document.getElementById('manageUserId').value = user.id;
+        document.getElementById('manageUserTitle').textContent = `Manage: ${user.fullName}`;
+        document.getElementById('manageUserRole').value = user.role;
+        document.getElementById('manageUserPosition').value = user.position || '';
+        document.getElementById('manageUserActive').checked = user.isActive !== false; // Default true
+
+        // Setup Reset Button
+        const btnReset = document.getElementById('btnResetUserPass');
+        btnReset.onclick = () => this.resetUserPassword(user.id);
+
+        const manageForm = document.getElementById('manageUserForm');
+        manageForm.onsubmit = (e) => this.handleManageUserSave(e);
+
+        document.getElementById('manageUserModal').classList.remove('hidden');
+    }
+
+    async handleManageUserSave(e) {
+        e.preventDefault();
+        const userId = document.getElementById('manageUserId').value;
+        const role = document.getElementById('manageUserRole').value;
+        const position = document.getElementById('manageUserPosition').value;
+        const isActive = document.getElementById('manageUserActive').checked;
 
         try {
-            const res = await fetch(`${AUTH_URL}/users/${userId}/role`, {
+            const res = await fetch(`${AUTH_URL}/users/${userId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role: newRole })
+                body: JSON.stringify({ role, position, isActive })
             });
+
             if (res.ok) {
-                alert('Role updated successfully');
+                alert('User updated successfully');
+                document.getElementById('manageUserModal').classList.add('hidden');
+                this.loadUsers();
             } else {
-                alert('Failed to update role');
+                alert('Failed to update user');
             }
         } catch (err) {
             console.error(err);
         }
+    }
+
+    async resetUserPassword(userId) {
+        if (!confirm('Are you sure you want to reset this user\'s password?')) return;
+        try {
+            const res = await fetch(`${AUTH_URL}/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId })
+            });
+            const data = await res.json();
+            alert(data.message);
+        } catch (err) { console.error(err); }
+    }
+
+    async handleAddUser(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        data.isAcademic = formData.get('isAcademic') === 'on';
+
+        try {
+            const res = await fetch(`${AUTH_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const response = await res.json();
+            if (res.ok) {
+                alert(`User created! Default password: ${response.defaultPassword}`);
+                document.getElementById('addUserModal').classList.add('hidden');
+                e.target.reset();
+                this.loadUsers(); // Refresh list
+            } else {
+                alert('Error: ' + response.error);
+            }
+        } catch (err) { console.error(err); }
     }
 
     async loadRequests() {
@@ -353,13 +437,13 @@ class AppState {
             const context = r.data.employee_name || 'Unknown';
 
             return `
-            <li class="list-item" onclick="app.selectRequest('${r.id}')">
+        < li class= "list-item" onclick = "app.selectRequest('${r.id}')" >
                 <h4>${nodeName}</h4>
                 <p>Process: ${procDef.name}</p>
                 <p>For: ${context}</p>
                 <p>ID: ${r.id}</p>
-            </li>
-        `}).join('');
+            </li >
+            `}).join('');
     }
 
     renderRequestList() {
@@ -370,13 +454,13 @@ class AppState {
             const nodeName = procDef.nodes[r.currentNode] ? procDef.nodes[r.currentNode].name : 'End';
 
             return `
-            <li class="list-item" onclick="app.selectRequest('${r.id}')">
+            < li class= "list-item" onclick = "app.selectRequest('${r.id}')" >
                 <h4>${r.initiator}</h4>
                 <p>${procDef.name}</p>
                 <p>Status: ${r.status}</p>
                 <p>Current: ${nodeName}</p>
-            </li>
-        `}).join('');
+            </li >
+            `}).join('');
     }
 
     canUserPerformTask(request) {
@@ -418,11 +502,11 @@ class AppState {
         // Render Read-Only Data
         const dataGrid = document.getElementById('readOnlyData');
         dataGrid.innerHTML = Object.entries(request.data).map(([key, value]) => `
-            <div class="data-item">
+        < div class= "data-item" >
                 <span class="data-label">${key.replace(/_/g, ' ')}</span>
                 <span class="data-value">${value}</span>
-            </div>
-        `).join('');
+            </div >
+            `).join('');
 
         // Render Form
         const formFields = document.getElementById('formFields');
@@ -510,7 +594,7 @@ class AppState {
                 new FormData(form).forEach((value, key) => formData[key] = value);
                 node.form.forEach(f => {
                     if (f.type === 'checkbox') {
-                        formData[f.name] = form.querySelector(`[name="${f.name}"]`).checked;
+                        formData[f.name] = form.querySelector(`[name = "${f.name}"]`).checked;
                     }
                 });
                 this.processStep(requestId, formData);
