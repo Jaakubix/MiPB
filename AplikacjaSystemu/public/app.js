@@ -439,12 +439,12 @@ class AppState {
             const context = r.data.employee_name || 'Unknown';
 
             return `
-        < li class= "list-item" onclick = "app.selectRequest('${r.id}')" >
+            <li class="list-item" onclick="app.selectRequest('${r.id}')">
                 <h4>${nodeName}</h4>
                 <p>Process: ${procDef.name}</p>
                 <p>For: ${context}</p>
                 <p>ID: ${r.id}</p>
-            </li >
+            </li>
             `}).join('');
     }
 
@@ -456,12 +456,12 @@ class AppState {
             const nodeName = procDef.nodes[r.currentNode] ? procDef.nodes[r.currentNode].name : 'End';
 
             return `
-            < li class= "list-item" onclick = "app.selectRequest('${r.id}')" >
+            <li class="list-item" onclick="app.selectRequest('${r.id}')">
                 <h4>${r.initiator}</h4>
                 <p>${procDef.name}</p>
                 <p>Status: ${r.status}</p>
                 <p>Current: ${nodeName}</p>
-            </li >
+            </li>
             `}).join('');
     }
 

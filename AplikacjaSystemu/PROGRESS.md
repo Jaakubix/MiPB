@@ -13,6 +13,8 @@
   - Uproszczono widok (tylko Imię/Email).
   - Usunięto wyświetlanie roli bezpośrednio na liście.
   - Dodano wizualne oznaczenie (wyszarzenie) dla nieaktywnych kont.
+- **Lista Zadań (Task List) - BUGFIX**:
+  - Naprawiono błąd wyświetlania surowego kodu HTML `< li ...` zamiast listy zadań. Usunięto zbędne spacje w szablonach stringów w `renderTaskList` i `renderRequestList`.
 - **Modal "Manage User"**:
   - Dodano pola edycji: Rola, Stanowisko, Checkbox "Active Account".
   - Dodano przycisk "Reset Password" wewnątrz modala.
@@ -21,4 +23,4 @@
   - Poprawiono obsługę błędów przy aktualizacji użytkownika.
 
 ### Inne
-- **Wymagane Działanie**: Restart serwera jest konieczny po tych zmianach, aby zaktualizować schemat bazy danych.
+- **Wymagane Działanie**: Restart serwera jest konieczny po tych zmianach, aby zaktualizować schemat bazy danych i załadować nowe trasy.
