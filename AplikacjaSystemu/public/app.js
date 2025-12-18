@@ -21,15 +21,15 @@ const PROCESS_DEFS = {
                 ]
             },
             'Task_ReviewAndForward_HeadOU': { name: 'Review and approve leave request', role: 'HeadOU', next: 'Task_ReviewApplication_PD', form: [{ name: 'head_ou_decision', label: 'Decision', type: 'select', options: ['Approved', 'Rejected'] }] },
-            'Task_ReviewApplication_PD': { name: 'Review leave request (check entitlement)', role: 'PD', next: 'Gateway_IsAcademicTeacher', form: [{ name: 'pd_review_status', label: 'Entitlement Check', type: 'select', options: ['Entitlement Confirmed', 'Entitlement Exceeded'] }, { name: 'is_academic_teacher', label: 'Is an Academic Teacher?', type: 'checkbox' }, { name: 'lss_opinion_notes', label: 'LSS Opinion Notes', type: 'textarea' }] },
+            'Task_ReviewApplication_PD': { name: 'Review leave request (check entitlement)', role: 'PD', targetDepartment: 'HR', next: 'Gateway_IsAcademicTeacher', form: [{ name: 'pd_review_status', label: 'Entitlement Check', type: 'select', options: ['Entitlement Confirmed', 'Entitlement Exceeded'] }, { name: 'is_academic_teacher', label: 'Is an Academic Teacher?', type: 'checkbox' }, { name: 'lss_opinion_notes', label: 'LSS Opinion Notes', type: 'textarea' }] },
             'Gateway_IsAcademicTeacher': { type: 'gateway', handler: (data) => data.is_academic_teacher ? 'Task_Review_PRK' : 'Task_MakeDecision_Chancellor' },
-            'Task_Review_PRK': { name: 'Review application (PRK)', role: 'PRK', next: 'Task_Review_PRN', form: [{ name: 'prk_review_status', label: 'Review Status', type: 'select', options: ['Positive', 'Negative'] }] },
-            'Task_Review_PRN': { name: 'Review application (PRN)', role: 'PRN', next: 'Task_MakeDecision_RKR', form: [{ name: 'prn_review_status', label: 'Review Status', type: 'select', options: ['Positive', 'Negative'] }] },
-            'Task_MakeDecision_RKR': { name: 'Make decision (RKR)', role: 'Rector', next: 'Gateway_JoinDecision', form: [{ name: 'final_decision', label: 'Final Decision', type: 'select', options: ['Approved', 'Rejected'] }], onComplete: (data) => { data.final_decision_maker = 'Rector'; } },
-            'Task_MakeDecision_Chancellor': { name: 'Make decision (KAN)', role: 'Chancellor', next: 'Gateway_JoinDecision', form: [{ name: 'final_decision', label: 'Final Decision', type: 'select', options: ['Approved', 'Rejected'] }], onComplete: (data) => { data.final_decision_maker = 'Chancellor'; } },
+            'Task_Review_PRK': { name: 'Review application (PRK)', role: 'PRK', targetDepartment: 'Administration', next: 'Task_Review_PRN', form: [{ name: 'prk_review_status', label: 'Review Status', type: 'select', options: ['Positive', 'Negative'] }] },
+            'Task_Review_PRN': { name: 'Review application (PRN)', role: 'PRN', targetDepartment: 'Administration', next: 'Task_MakeDecision_RKR', form: [{ name: 'prn_review_status', label: 'Review Status', type: 'select', options: ['Positive', 'Negative'] }] },
+            'Task_MakeDecision_RKR': { name: 'Make decision (RKR)', role: 'Rector', targetDepartment: 'Administration', next: 'Gateway_JoinDecision', form: [{ name: 'final_decision', label: 'Final Decision', type: 'select', options: ['Approved', 'Rejected'] }], onComplete: (data) => { data.final_decision_maker = 'Rector'; } },
+            'Task_MakeDecision_Chancellor': { name: 'Make decision (KAN)', role: 'Chancellor', targetDepartment: 'Administration', next: 'Gateway_JoinDecision', form: [{ name: 'final_decision', label: 'Final Decision', type: 'select', options: ['Approved', 'Rejected'] }], onComplete: (data) => { data.final_decision_maker = 'Chancellor'; } },
             'Gateway_JoinDecision': { type: 'gateway', handler: () => 'Task_InformHeadOU' },
-            'Task_InformHeadOU': { name: 'Inform Head of O.U.', role: 'PD', next: 'Task_ImplementChanges', form: [{ name: 'inform_confirmation', label: 'I have informed the Head of O.U.', type: 'checkbox' }] },
-            'Task_ImplementChanges': { name: 'Register leave in HR system', role: 'PD', next: 'EndEvent_ProcessEnded', form: [{ name: 'register_confirmation', label: 'Leave registered in system', type: 'checkbox' }] },
+            'Task_InformHeadOU': { name: 'Inform Head of O.U.', role: 'PD', targetDepartment: 'HR', next: 'Task_ImplementChanges', form: [{ name: 'inform_confirmation', label: 'I have informed the Head of O.U.', type: 'checkbox' }] },
+            'Task_ImplementChanges': { name: 'Register leave in HR system', role: 'PD', targetDepartment: 'HR', next: 'EndEvent_ProcessEnded', form: [{ name: 'register_confirmation', label: 'Leave registered in system', type: 'checkbox' }] },
             'EndEvent_ProcessEnded': { type: 'end', name: 'Process Ended' }
         }
     },
@@ -38,15 +38,15 @@ const PROCESS_DEFS = {
         start: 'Task_SubmitApplication',
         nodes: {
             'Task_SubmitApplication': { name: 'Submit application for distinction', role: 'HeadOU', next: 'Task_PresentApplicationsForAcceptance', form: [{ name: 'employee_name', label: 'Employee Name', type: 'text' }, { name: 'organizational_unit', label: 'Organizational Unit', type: 'text' }, { name: 'decoration_type', label: 'Decoration Type', type: 'text' }, { name: 'application_justification', label: 'Justification', type: 'textarea' }] },
-            'Task_PresentApplicationsForAcceptance': { name: 'Present applications for acceptance', role: 'PD', next: 'Task_ReviewApplications', form: [{ name: 'pd_verification', label: 'Application Verified', type: 'checkbox' }] },
-            'Task_ReviewApplications': { name: 'Review applications and forward to PD', role: 'PRK', next: 'Task_PresentApplicationsToRKR', form: [{ name: 'reviewer_opinion', label: 'Reviewer Opinion', type: 'textarea' }] },
-            'Task_PresentApplicationsToRKR': { name: 'Present reviewed applications to Rector', role: 'PD', next: 'Task_MakeDecision', form: [{ name: 'pd_forward_rector', label: 'Forwarded to Rector', type: 'checkbox' }] },
-            'Task_MakeDecision': { name: 'Make decision', role: 'Rector', next: 'Gateway_RKRDecision', form: [{ name: 'rkr_decision', label: 'Rector Decision', type: 'select', options: ['Accepted', 'Rejected'] }] },
+            'Task_PresentApplicationsForAcceptance': { name: 'Present applications for acceptance', role: 'PD', targetDepartment: 'HR', next: 'Task_ReviewApplications', form: [{ name: 'pd_verification', label: 'Application Verified', type: 'checkbox' }] },
+            'Task_ReviewApplications': { name: 'Review applications and forward to PD', role: 'PRK', targetDepartment: 'Administration', next: 'Task_PresentApplicationsToRKR', form: [{ name: 'reviewer_opinion', label: 'Reviewer Opinion', type: 'textarea' }] },
+            'Task_PresentApplicationsToRKR': { name: 'Present reviewed applications to Rector', role: 'PD', targetDepartment: 'HR', next: 'Task_MakeDecision', form: [{ name: 'pd_forward_rector', label: 'Forwarded to Rector', type: 'checkbox' }] },
+            'Task_MakeDecision': { name: 'Make decision', role: 'Rector', targetDepartment: 'Administration', next: 'Gateway_RKRDecision', form: [{ name: 'rkr_decision', label: 'Rector Decision', type: 'select', options: ['Accepted', 'Rejected'] }] },
             'Gateway_RKRDecision': { type: 'gateway', handler: (data) => data.rkr_decision === 'Accepted' ? 'Task_ForwardApplicationsToMPD' : 'EndEvent_Rejected' },
-            'Task_ForwardApplicationsToMPD': { name: 'Forward accepted applications to MPD', role: 'PD', next: 'Task_HandleApplicationsExternal', form: [{ name: 'pd_forward_mpd', label: 'Forwarded to MPD', type: 'checkbox' }] },
-            'Task_HandleApplicationsExternal': { name: 'Handle applications (external transfer)', role: 'MPD', next: 'Task_ReceiveDecision', form: [{ name: 'mpd_handle_external', label: 'Sent to External Body', type: 'checkbox' }] },
-            'Task_ReceiveDecision': { name: 'Receive decision on award', role: 'PD', next: 'Task_EnterToRegister', form: [{ name: 'award_received', label: 'Award Decision Received', type: 'checkbox' }] },
-            'Task_EnterToRegister': { name: 'Enter decoration into register', role: 'PD', next: 'EndEvent_Completed', form: [{ name: 'award_grant_date', label: 'Award Grant Date', type: 'date' }], onComplete: (data) => { data.process_outcome = 'Completed'; } },
+            'Task_ForwardApplicationsToMPD': { name: 'Forward accepted applications to MPD', role: 'PD', targetDepartment: 'HR', next: 'Task_HandleApplicationsExternal', form: [{ name: 'pd_forward_mpd', label: 'Forwarded to MPD', type: 'checkbox' }] },
+            'Task_HandleApplicationsExternal': { name: 'Handle applications (external transfer)', role: 'MPD', targetDepartment: 'External', next: 'Task_ReceiveDecision', form: [{ name: 'mpd_handle_external', label: 'Sent to External Body', type: 'checkbox' }] },
+            'Task_ReceiveDecision': { name: 'Receive decision on award', role: 'PD', targetDepartment: 'HR', next: 'Task_EnterToRegister', form: [{ name: 'award_received', label: 'Award Decision Received', type: 'checkbox' }] },
+            'Task_EnterToRegister': { name: 'Enter decoration into register', role: 'PD', targetDepartment: 'HR', next: 'EndEvent_Completed', form: [{ name: 'award_grant_date', label: 'Award Grant Date', type: 'date' }], onComplete: (data) => { data.process_outcome = 'Completed'; } },
             'EndEvent_Rejected': { type: 'end', name: 'Application Rejected', onComplete: (data) => { data.process_outcome = 'Rejected'; } },
             'EndEvent_Completed': { type: 'end', name: 'Process Ended' }
         }
@@ -57,16 +57,16 @@ const PROCESS_DEFS = {
         nodes: {
             'StartEvent_ApplicationSubmitted': { name: 'Submit Application', role: 'HeadOU', next: 'Task_ReviewAndForward_HeadOU', form: [{ name: 'employee_name', label: 'Employee Name', type: 'text' }, { name: 'proposed_conditions', label: 'Proposed Conditions', type: 'textarea' }, { name: 'change_justification', label: 'Justification', type: 'textarea' }, { name: 'change_effective_date', label: 'Effective Date', type: 'date' }] },
             'Task_ReviewAndForward_HeadOU': { name: 'Review and forward application to PD', role: 'HeadOU', next: 'Task_ReviewApplication_PD', form: [{ name: 'head_of_ou_review_status', label: 'Head OU Decision', type: 'select', options: ['Approved', 'Rejected'] }] },
-            'Task_ReviewApplication_PD': { name: 'Review application (PD)', role: 'PD', next: 'Task_Review_KWE', form: [{ name: 'pd_review_status', label: 'PD Review Status', type: 'select', options: ['Confirmed', 'Rejected'] }, { name: 'is_academic_teacher', label: 'Is Academic Teacher?', type: 'checkbox', default: true }] },
-            'Task_Review_KWE': { name: 'Review application (Quartermaster)', role: 'KWE', next: 'Gateway_IsAcademicTeacher', form: [{ name: 'kwe_financial_opinion', label: 'Financial Opinion', type: 'select', options: ['Funds Available', 'No Funds'] }] },
+            'Task_ReviewApplication_PD': { name: 'Review application (PD)', role: 'PD', targetDepartment: 'HR', next: 'Task_Review_KWE', form: [{ name: 'pd_review_status', label: 'PD Review Status', type: 'select', options: ['Confirmed', 'Rejected'] }, { name: 'is_academic_teacher', label: 'Is Academic Teacher?', type: 'checkbox', default: true }] },
+            'Task_Review_KWE': { name: 'Review application (Quartermaster)', role: 'KWE', targetDepartment: 'Finance', next: 'Gateway_IsAcademicTeacher', form: [{ name: 'kwe_financial_opinion', label: 'Financial Opinion', type: 'select', options: ['Funds Available', 'No Funds'] }] },
             'Gateway_IsAcademicTeacher': { type: 'gateway', handler: (data) => data.is_academic_teacher ? 'Task_Review_PRK' : 'Task_MakeDecision_Chancellor' },
-            'Task_MakeDecision_Chancellor': { name: 'Make decision (KAN)', role: 'Chancellor', next: 'Gateway_JoinDecision', form: [{ name: 'final_decision', label: 'Final Decision', type: 'select', options: ['Approved', 'Rejected'] }], onComplete: (data) => { data.final_decision_maker = 'Chancellor'; } },
-            'Task_Review_PRK': { name: 'Review application (PRK)', role: 'PRK', next: 'Task_Review_PRN', form: [{ name: 'prk_opinion', label: 'PRK Opinion', type: 'select', options: ['Approved', 'Rejected'] }] },
-            'Task_Review_PRN': { name: 'Review application (PRN)', role: 'PRN', next: 'Task_MakeDecision_RKR', form: [{ name: 'prn_opinion', label: 'PRN Opinion', type: 'select', options: ['Approved', 'Rejected'] }] },
-            'Task_MakeDecision_RKR': { name: 'Make decision (RKR)', role: 'Rector', next: 'Gateway_JoinDecision', form: [{ name: 'final_decision', label: 'Final Decision', type: 'select', options: ['Approved', 'Rejected'] }], onComplete: (data) => { data.final_decision_maker = 'Rector'; } },
+            'Task_MakeDecision_Chancellor': { name: 'Make decision (KAN)', role: 'Chancellor', targetDepartment: 'Administration', next: 'Gateway_JoinDecision', form: [{ name: 'final_decision', label: 'Final Decision', type: 'select', options: ['Approved', 'Rejected'] }], onComplete: (data) => { data.final_decision_maker = 'Chancellor'; } },
+            'Task_Review_PRK': { name: 'Review application (PRK)', role: 'PRK', targetDepartment: 'Administration', next: 'Task_Review_PRN', form: [{ name: 'prk_opinion', label: 'PRK Opinion', type: 'select', options: ['Approved', 'Rejected'] }] },
+            'Task_Review_PRN': { name: 'Review application (PRN)', role: 'PRN', targetDepartment: 'Administration', next: 'Task_MakeDecision_RKR', form: [{ name: 'prn_opinion', label: 'PRN Opinion', type: 'select', options: ['Approved', 'Rejected'] }] },
+            'Task_MakeDecision_RKR': { name: 'Make decision (RKR)', role: 'Rector', targetDepartment: 'Administration', next: 'Gateway_JoinDecision', form: [{ name: 'final_decision', label: 'Final Decision', type: 'select', options: ['Approved', 'Rejected'] }], onComplete: (data) => { data.final_decision_maker = 'Rector'; } },
             'Gateway_JoinDecision': { type: 'gateway', handler: () => 'Task_ImplementAndPrepare' },
-            'Task_ImplementAndPrepare': { name: 'Implement, Prepare, and Inform', role: 'PD', next: 'Task_HandOverAndArchive', form: [{ name: 'inform_head_ou', label: 'Inform Head of O.U.', type: 'checkbox' }, { name: 'implement_hr', label: 'Implement in HR System', type: 'checkbox' }, { name: 'prepare_docs', label: 'Prepare Confirming Documents', type: 'checkbox' }] },
-            'Task_HandOverAndArchive': { name: 'Hand Over Documents and Archive', role: 'PD', next: 'EndEvent_ProcessEnded', form: [{ name: 'hand_over_docs', label: 'Hand over to employee', type: 'checkbox' }, { name: 'archive_copy', label: 'Archive copy in personnel files', type: 'checkbox' }] },
+            'Task_ImplementAndPrepare': { name: 'Implement, Prepare, and Inform', role: 'PD', targetDepartment: 'HR', next: 'Task_HandOverAndArchive', form: [{ name: 'inform_head_ou', label: 'Inform Head of O.U.', type: 'checkbox' }, { name: 'implement_hr', label: 'Implement in HR System', type: 'checkbox' }, { name: 'prepare_docs', label: 'Prepare Confirming Documents', type: 'checkbox' }] },
+            'Task_HandOverAndArchive': { name: 'Hand Over Documents and Archive', role: 'PD', targetDepartment: 'HR', next: 'EndEvent_ProcessEnded', form: [{ name: 'hand_over_docs', label: 'Hand over to employee', type: 'checkbox' }, { name: 'archive_copy', label: 'Archive copy in personnel files', type: 'checkbox' }] },
             'EndEvent_ProcessEnded': { type: 'end', name: 'Service process ended', onComplete: (data) => { data.status = 'Completed'; } }
         }
     }
@@ -79,6 +79,7 @@ class AppState {
         this.token = localStorage.getItem('token');
         this.currentUser = JSON.parse(localStorage.getItem('user')) || null;
         this.requests = [];
+        this.sortDesc = true; // Default sort: Newest first
         this.init();
     }
 
@@ -87,7 +88,11 @@ class AppState {
             this.showLogin();
         } else {
             this.renderUserHeader();
-            this.loadRequests();
+            if (this.currentUser.role === 'Admin') {
+                this.showAdminPanel();
+            } else {
+                this.loadRequests();
+            }
         }
 
         // Login Handler
@@ -141,12 +146,49 @@ class AppState {
 
                 document.getElementById('loginModal').style.display = 'none';
                 this.renderUserHeader();
-                this.loadRequests();
+                if (this.currentUser.role === 'Admin') {
+                    this.showAdminPanel();
+                } else {
+                    this.loadRequests();
+                }
             } else {
                 alert('Login failed: ' + data.message);
             }
         } catch (err) {
             alert('Login error: ' + err.message);
+        }
+    }
+
+    async handleChangePassword(e) {
+        e.preventDefault();
+        const oldPassword = document.getElementById('oldPass').value;
+        const newPassword = document.getElementById('newPass').value;
+
+        try {
+            const res = await fetch(`${AUTH_URL}/change-password`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.token}` // Good practice, though backend might expect it in body for this app
+                },
+                body: JSON.stringify({
+                    userId: this.currentUser.id, // Keeping consistent with backend expectation
+                    oldPassword,
+                    newPassword
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                alert('Password changed successfully. Please login again.');
+                document.getElementById('passwordModal').classList.add('hidden');
+                e.target.reset();
+                this.handleLogout();
+            } else {
+                alert('Failed to change password: ' + (data.message || data.error));
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
         }
     }
 
@@ -162,6 +204,7 @@ class AppState {
         if (this.currentUser) {
             document.getElementById('userInfo').textContent = `Welcome, ${this.currentUser.fullName} (${this.currentUser.role})`;
             document.getElementById('btnLogout').style.display = 'inline-block';
+            document.getElementById('btnChangePass').style.display = 'inline-block';
             this.updateUIState(); // Refresh buttons/permissions
         }
     }
@@ -307,13 +350,15 @@ class AppState {
     async createRequest(processType) {
         const definition = PROCESS_DEFS[processType];
 
-        let initiatorRoleRequired = 'Employee';
-        if (processType === 'Decorations' || processType === 'EmploymentConditions') initiatorRoleRequired = 'HeadOU';
+        // START: Permission Check Relaxed
+        // Both Employee and HeadOU can start any process
+        const allowedRoles = ['Employee', 'HeadOU'];
 
-        if (this.currentUser.role !== initiatorRoleRequired && this.currentUser.role !== 'Admin') {
-            alert(`Only ${initiatorRoleRequired} can start a ${definition.name}.`);
+        if (!allowedRoles.includes(this.currentUser.role)) {
+            alert(`Your role (${this.currentUser.role}) cannot start a new process.`);
             return;
         }
+        // END: Permission Check Relaxed
 
         const newRequest = {
             id: Date.now().toString(),
@@ -330,6 +375,7 @@ class AppState {
         // Pre-fill
         if (processType === 'LeaveRequest') {
             newRequest.data.employee_name = this.currentUser.fullName;
+            newRequest.data.employee_position = this.currentUser.position || 'Unknown';
             newRequest.data.is_academic_teacher = this.currentUser.isAcademic;
             newRequest.data.employee_leave_entitlement_balance = 26;
         }
@@ -338,7 +384,7 @@ class AppState {
             const res = await fetch(`${API_URL}/requests`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newRequest)
+                body: JSON.stringify(newRequest) // Backend now expects department
             });
             if (res.ok) {
                 this.closeModal();
@@ -381,6 +427,7 @@ class AppState {
             const gateway = procDef.nodes[nextNodeId];
             nextNodeId = gateway.handler(request.data);
         }
+
         request.currentNode = nextNodeId;
 
         // 5. Logic: Check End
@@ -403,6 +450,9 @@ class AppState {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    currentNode: request.currentNode,
+                    status: request.status,
+                    data: request.data,
                     currentNode: request.currentNode,
                     status: request.status,
                     data: request.data,
@@ -450,19 +500,36 @@ class AppState {
 
     renderRequestList() {
         const list = document.getElementById('requestList');
-        list.innerHTML = this.requests.map(r => {
+
+        // Filter by Initiator (My Created Requests)
+        let myRequests = this.requests.filter(r => r.initiator === this.currentUser.username);
+
+        // Sort
+        myRequests.sort((a, b) => {
+            const dateA = parseInt(a.id); // ID is timestamp
+            const dateB = parseInt(b.id);
+            return this.sortDesc ? dateB - dateA : dateA - dateB;
+        });
+
+        list.innerHTML = myRequests.map(r => {
             const procType = r.processType || 'LeaveRequest';
             const procDef = PROCESS_DEFS[procType];
             const nodeName = procDef.nodes[r.currentNode] ? procDef.nodes[r.currentNode].name : 'End';
+            const dateStr = new Date(parseInt(r.id)).toLocaleDateString();
 
             return `
             <li class="list-item" onclick="app.selectRequest('${r.id}')">
-                <h4>${r.initiator}</h4>
-                <p>${procDef.name}</p>
+                <h4>${procDef.name}</h4>
                 <p>Status: ${r.status}</p>
-                <p>Current: ${nodeName}</p>
+                <p>Node: ${nodeName}</p>
+                <small>Created: ${dateStr}</small>
             </li>
             `}).join('');
+    }
+
+    toggleSort() {
+        this.sortDesc = !this.sortDesc;
+        this.renderRequestList();
     }
 
     canUserPerformTask(request) {
@@ -476,10 +543,9 @@ class AppState {
             return this.currentUser.username === request.initiator;
         }
 
-        // Admin override
-        if (this.currentUser.role === 'Admin') return true;
+        if (this.currentUser.role !== node.role) return false;
 
-        return node.role === this.currentUser.role;
+        return true;
     }
 
     selectRequest(requestId) {
@@ -504,10 +570,10 @@ class AppState {
         // Render Read-Only Data
         const dataGrid = document.getElementById('readOnlyData');
         dataGrid.innerHTML = Object.entries(request.data).map(([key, value]) => `
-        < div class= "data-item" >
+            <div class="data-item">
                 <span class="data-label">${key.replace(/_/g, ' ')}</span>
                 <span class="data-value">${value}</span>
-            </div >
+            </div>
             `).join('');
 
         // Render Form
@@ -625,7 +691,6 @@ class AppState {
         let canStartSomething = false;
         if (this.currentUser.role === 'Employee') canStartSomething = true;
         if (this.currentUser.role === 'HeadOU') canStartSomething = true;
-        if (this.currentUser.role === 'Admin') canStartSomething = true; // Admin can start too
 
         if (canStartSomething) {
             btn.style.display = 'block';
@@ -635,7 +700,7 @@ class AppState {
             if (this.currentUser.role === 'Employee') {
                 newBtn.textContent = 'New Leave Request';
                 newBtn.onclick = () => this.createRequest('LeaveRequest');
-            } else if (this.currentUser.role === 'HeadOU' || this.currentUser.role === 'Admin') {
+            } else if (this.currentUser.role === 'HeadOU') {
                 newBtn.textContent = 'New Process...';
                 newBtn.onclick = () => {
                     document.getElementById('processModal').classList.remove('hidden');

@@ -14,6 +14,10 @@ const Request = sequelize.define('Request', {
         type: DataTypes.STRING, // Storing name for now to match legacy, or use relationship
         allowNull: false
     },
+    department: {
+        type: DataTypes.STRING,
+        allowNull: true // The current department this request is "in"
+    },
     currentNode: {
         type: DataTypes.STRING,
         allowNull: false

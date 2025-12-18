@@ -20,6 +20,10 @@ const User = sequelize.define('User', {
         defaultValue: 'Employee'
         // Roles: Employee, HeadOU, PD, KWE, PRK, PRN, Rector, Chancellor, MPD
     },
+    department: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     isAcademic: {
         type: DataTypes.BOOLEAN,
         defaultValue: false

@@ -30,17 +30,18 @@ const seedData = async () => {
         console.log('Seeding users...');
         const password = await bcrypt.hash('password123', 10);
         const users = [
-            { username: 'alice.academic@university.pl', fullName: 'Alice Academic', role: 'Employee', isAcademic: true, position: 'Lecturer' },
-            { username: 'nancy.nonacademic@university.pl', fullName: 'Nancy NonAcademic', role: 'Employee', isAcademic: false, position: 'Clerk' },
-            { username: 'holly.head@university.pl', fullName: 'Holly Head', role: 'HeadOU', position: 'Head of Department' },
-            { username: 'penny.personnel@university.pl', fullName: 'Penny Personnel', role: 'PD', position: 'HR Specialist' },
-            { username: 'quentin.quartermaster@university.pl', fullName: 'Quentin Quartermaster', role: 'KWE', position: 'Bursar' },
-            { username: 'adam.rector@university.pl', fullName: 'Adam Rector', role: 'Rector', position: 'Rector' },
-            { username: 'carl.chancellor@university.pl', fullName: 'Carl Chancellor', role: 'Chancellor', position: 'Chancellor' },
-            { username: 'paula.vredu@university.pl', fullName: 'Paula VREdu', role: 'PRK', position: 'Vice-Rector Education' },
-            { username: 'peter.vrsci@university.pl', fullName: 'Peter VRSci', role: 'PRN', position: 'Vice-Rector Science' },
-            { username: 'mike.mpd@university.pl', fullName: 'Mike MPD', role: 'MPD', position: 'Marketing Specialist' },
-            { username: 'admin', fullName: 'System Admin', role: 'Admin', position: 'Administrator' }
+            { username: 'alice.academic@university.pl', fullName: 'Alice Academic', role: 'Employee', isAcademic: true, position: 'Lecturer', department: 'IT' },
+            { username: 'nancy.nonacademic@university.pl', fullName: 'Nancy NonAcademic', role: 'Employee', isAcademic: false, position: 'Clerk', department: 'HR' },
+            { username: 'holly.head@university.pl', fullName: 'Holly Head', role: 'HeadOU', position: 'Head of Department', department: 'IT' },
+            { username: 'holly.hr@university.pl', fullName: 'Holly HR', role: 'HeadOU', position: 'Head of HR', department: 'HR' },
+            { username: 'penny.personnel@university.pl', fullName: 'Penny Personnel', role: 'PD', position: 'HR Specialist', department: 'HR' },
+            { username: 'quentin.quartermaster@university.pl', fullName: 'Quentin Quartermaster', role: 'KWE', position: 'Bursar', department: 'Finance' },
+            { username: 'adam.rector@university.pl', fullName: 'Adam Rector', role: 'Rector', position: 'Rector', department: 'Administration' },
+            { username: 'carl.chancellor@university.pl', fullName: 'Carl Chancellor', role: 'Chancellor', position: 'Chancellor', department: 'Administration' },
+            { username: 'paula.vredu@university.pl', fullName: 'Paula VREdu', role: 'PRK', position: 'Vice-Rector Education', department: 'Administration' },
+            { username: 'peter.vrsci@university.pl', fullName: 'Peter VRSci', role: 'PRN', position: 'Vice-Rector Science', department: 'Administration' },
+            { username: 'mike.mpd@university.pl', fullName: 'Mike MPD', role: 'MPD', position: 'Marketing Specialist', department: 'External' },
+            { username: 'admin', fullName: 'System Admin', role: 'Admin', position: 'Administrator', department: 'IT' }
         ];
 
         for (const u of users) {
