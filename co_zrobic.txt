@@ -1,0 +1,8 @@
+dorobić:
+zmiana haseł przez uzytkownikow
+zmienić procesy żeby dzialaly na dany departament nie danego użytkownika
+admin ma nie mieć dostępu do procesow on tylko zarzadza systemem (użytkownikami)/ nawet ich nie widzi
+departament OU powinien widzieć Leave Request i moc tworzyć nowe pocesy ( a nie ze tylko HeadOU to może)
+z podglądu procesow jak ktoś dalej zatwierdza usunąć div (dac zrzut ekranu)
+jak tworze Leave Request to w Position powinienem widzieć przypisane mi stanowisko np. Professor
+użytkownik tworzocy dany proces powinien mieć możliwość sprawdzenia swoich procesow (z mozliwoscia sortowaniem po dacie)
