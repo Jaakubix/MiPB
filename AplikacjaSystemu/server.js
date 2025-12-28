@@ -59,8 +59,8 @@ const seedData = async () => {
 
 // Sync DB and Start Server
 // force: true will drop the table if it already exists
-sequelize.sync({ force: true }).then(async () => {
-    console.log('Database synced (force: true)');
+sequelize.sync({ force: false }).then(async () => {
+    console.log('Database synced (force: false)');
     await seedData();
     app.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);

@@ -1,4 +1,4 @@
 dorobić:
-poprawić zapis bazy żeby się nie inicjalizowala na nowo przy każdym uruchomieniu
-zmienic nazwe roli headou na ou
+poprawić zapis bazy żeby się nie inicjalizowała na nowo przy każdym uruchomieniu
+
 
